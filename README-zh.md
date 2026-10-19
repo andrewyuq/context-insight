@@ -1,5 +1,7 @@
 # CANNBot-Insight
 
+AgentLineage 功能已纳入 `agentlineage/`：提供原生会话冻结快照、文件行归属、证据检查和按原文坐标回查的 API。配置 `AGENTLINEAGE_CORE_URL` 后，通过 `/api/lineage/core/*` 调用；`POST /api/lineage/sessions/{sessionId}/snapshots` 将已登记的 Claude/Codex 原生会话关联到冻结快照。安装与职责分工见[架构和 API 说明](docs/architecture.md#agentlineage-integration)。DSH 薄插件和可选 Learning 模块保留在同一仓库。
+
 LLM 编码 Agent 的 Session 级可观测工具：导入 agent 会话日志，逐轮分析 token、上下文、子代理与技能使用。
 
 **[English Documentation](README.md)**

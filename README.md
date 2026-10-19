@@ -6,6 +6,8 @@ Session-level observability for LLM coding agents: import agent session logs and
 
 ## Features
 
+- **AgentLineage API** — optional Python evidence engine in `agentlineage/`: immutable native-session snapshots, file lineage, evidence checks and exact source-coordinate lookup. Configure `AGENTLINEAGE_CORE_URL` to use `/api/lineage/core/*`; freeze a registered native Claude/Codex session with `POST /api/lineage/sessions/{sessionId}/snapshots`. See [architecture and API setup](docs/architecture.md#agentlineage-integration). The existing DSH adapter and optional Learning module live in the same repository.
+
 Import SQLite (opencode.db) or JSONL (native Claude Code / Codex `rollout-*.jsonl` / cpx proxy captures; plaintext, `.jsonl.7z` and legacy `.jsonl.gz`, `cpx-` prefix handled) and explore the session detail tabs:
 
 - **Tokens & Cost** — 5-item per-turn token breakdown vs the model's context window, plus cost estimation
