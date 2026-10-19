@@ -83,7 +83,7 @@ npm pack --ignore-scripts
 产物包含 `cordis.patch.yml`；安装后默认随 Profile 托管本地 Core，自动分配端口与凭据。
 配置 Python 路径后，可直接说“刷新当前会话的 Lineage 快照，分析这个文件的修改来源”，无需手填 snapshot_id。
 历史任务通过 DSH 原生会话服务读取，包含压缩保存的 v4 日志和子会话。外部 Core 与可选 Learning 模式保留。
-安装、自然语言步骤与配置见 [插件文档](integrations/dsh/README.md)。SDK 锁定 0.2.1-rc.2；宿主升级前重跑契约测试。
+插件 `0.1.0-alpha.3` 可从 [Fuxi DSH 插件市场](https://fuxi-ailabs.github.io/dsh-plugin-market/index.json) 安装，市场描述为“Fuxi 团队插件目录”。安装、自然语言步骤与配置见 [插件文档](integrations/dsh/README.md)。SDK 锁定 0.2.1-rc.2；宿主升级前重跑契约测试。
 
 ## 组件化接入指引
 

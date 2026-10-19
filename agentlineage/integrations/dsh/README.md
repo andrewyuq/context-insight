@@ -2,23 +2,31 @@
 
 插件默认托管本地 Core：Profile 启动时分配空闲 loopback 端口，健康检查通过后注册工具；退出或卸载插件时终止所属进程。数据、凭据和会话绑定保留在磁盘，下次启动可继续查询。也支持连接已有外部 Core。
 
-支持 DSH **0.2.1-rc.2**、Cordis **4.0.5**、Node 24+、Python 3.12+；插件版本 **0.1.0-alpha.2** 配合 Core **0.1.0a10**。Python 和 Core wheel 需一次性安装，插件启动不联网下载运行时。日常使用无需另开服务终端、手填端口、调用 HTTP API 或填写 snapshot_id。
+支持 DSH **0.2.1-rc.2**、Cordis **4.0.5**、Node 24+、Python 3.12+；插件版本 **0.1.0-alpha.3** 配合 Core **0.1.0a10**。Python 和 Core wheel 需一次性安装，插件启动不联网下载运行时。日常使用无需另开服务终端、手填端口、调用 HTTP API 或填写 snapshot_id。
 
 ## 安装和升级
 
-在 context-insight 仓库根目录执行以下 PowerShell 命令。已有 Profile 使用自己的名称；安装会保留该 Profile 的其他插件。
+先在 context-insight 仓库的 `agentlineage/` 目录准备 Python/Core，再从 DSH 的 Fuxi DSH 插件市场安装。Git 发布目录包含 `dist/`，安装时不需要 TypeScript 编译。已有同名插件时，先通过 DSH 卸载旧版本再安装新版。
 
 ```powershell
+# 从 context-insight 仓库根目录开始
 Set-Location agentlineage
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install ./components/core
 $env:AGENTLINEAGE_PYTHON = (Resolve-Path .\.venv\Scripts\python.exe).Path
+```
+
+从这个终端启动 DSH，在「插件」→「实验性插件 / 更多」启用「自定义插件市场」，再到「发现」→「添加索引源」添加 `https://fuxi-ailabs.github.io/dsh-plugin-market/index.json`，选择 AgentLineage `0.1.0-alpha.3` 安装。也可以从同一发布标签下载 Core wheel 安装到选定 Python；启动进程必须能从该 Python 导入 `agentlineage_core`。
+
+需要离线打包时，在 `agentlineage/` 目录继续执行：
+
+```powershell
 Set-Location integrations/dsh
 npm.cmd ci --ignore-scripts --no-audit --no-fund
 npm.cmd run build
 npm.cmd pack --ignore-scripts
 $profile = 'lineage-managed'
-$package = (Resolve-Path .\fuxi-ailabs-dsh-agentlineage-0.1.0-alpha.2.tgz).Path
+$package = (Resolve-Path .\fuxi-ailabs-dsh-agentlineage-0.1.0-alpha.3.tgz).Path
 dsh.cmd plugin --profile $profile add $package
 ```
 
@@ -105,4 +113,6 @@ Learning 保持可选：配置后注册 lineage_cases/memory_search；显式开�
 
 `npm ci --ignore-scripts && npm run check && npm pack --ignore-scripts`。AGENTLINEAGE_TEST_PYTHON 指向包含 Core 依赖的 Python；测试用当前仓库源码启动隔离 Core。
 
-集成测试使用真实 Cordis、ToolRuntime、DSH filesystem 工具、SessionStore、SQLite sessionQuery、Zstandard sessionPersistence 和 subprocess provider：文件写入/修改 → 原生会话 → 快照 → 查询，历史会话、子会话、会话间绑定隔离、刷新/切换、重启、端口释放、并发数据目录和外部服务生命周期。不调用真实模型。已打包 Profile 验证记录见仓库 acceptance 文件；模型自动选择工具的效果需在用户自己的 DSH 模型配置下验证。
+集成测试使用真实 Cordis、ToolRuntime、DSH filesystem 工具、SessionStore、SQLite sessionQuery、Zstandard sessionPersistence 和 subprocess provider：文件写入/修改 → 原生会话 → 快照 → 查询，历史会话、子会话、会话间绑定隔离、刷新/切换、重启、端口释放、并发数据目录和外部服务生命周期。不调用真实模型。已打包 Profile 验证记录见仓库 acceptance 文件。
+
+2026-10-19 的 `alpha.3` 市场验收使用全新 Profile 和真实模型，完成从索引发现、固定 Git commit 安装、启用，到原生 write/edit、lineage_import/query/status/open 和 Viewer 展示。快照包含 47 条记录，查询得到 2 次 confirmed 写入、2 条变更载荷和 4 条相关原生记录。Node 插件 `0.1.0-alpha.3` 与 Python Core `0.1.0a10` 是独立版本号。该验收覆盖这一受控任务，不等于通用工具选择或语义归因质量评测。脱敏结果和发布产物摘要见 [市场验收记录](../../acceptance-evidence/dsh-market-alpha3.json)。

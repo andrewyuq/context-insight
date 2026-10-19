@@ -37,12 +37,12 @@
     {
       "id": "L04",
       "status": "passed",
-      "result": "Core/Learning wheels installed in fresh venv; final alpha.2 tgz installed in an isolated DSH Profile using wheel-only Python imports"
+      "result": "Fresh-wheel Python and alpha.3 tgz verified in an isolated DSH Profile; seven tools, write/import/query and owned-Core shutdown passed. Historical alpha.2 evidence retained."
     },
     {
       "id": "L05",
       "status": "passed",
-      "result": "10 Insight API tests in the full gate; 8 DSH tests on Windows/Linux; actual packaged Profile write/import/query/failure/exit validation; no LLM called"
+      "result": "Full alpha.3 sync gate: 2231 repository tests and 8 DSH tests passed; fresh packaged Profile check passed without a model. Published alpha.3 market E2E separately used a real model and verified write/edit evidence and Viewer."
     },
     {
       "id": "E01",
@@ -139,13 +139,31 @@
       },
       "core_stopped_on_profile_exit": true,
       "python_source_imports": false,
-      "model_called": false
+      "model_called": false,
+      "version": "0.1.0-alpha.2",
+      "scope": "Historical alpha.2 isolated artifact test; alpha.3 market E2E is recorded separately."
+    },
+    "market_alpha3": {
+      "status": "passed",
+      "evidence": "acceptance-evidence/dsh-market-alpha3.json",
+      "source": "Published alpha.3 installed from market; this PR synchronizes metadata/assets and the identical runtime.",
+      "model_called": true,
+      "snapshot_records": 47,
+      "confirmed_writes": 2
+    },
+    "alpha3_sync": {
+      "status": "passed",
+      "evidence": "acceptance-evidence/alpha3-sync-checks.json",
+      "repository_tests_passed": 2231,
+      "repository_tests_skipped": 8,
+      "dsh_tests_passed": 8,
+      "packaged_profile": "passed"
     }
   },
   "remaining_outside_scope": [
     "Insight analysis/UI must attach native coordinates and the analysis input digest before projection_alignment can be verified",
     "Insight registered-session API freezes primary plaintext Claude/Codex source; its child/compressed orchestration is separate from the implemented native DSH import path",
-    "No continuous DSH background capture, combined Insight tool bundle, LLM-driven task quality evaluation, public package release or remote merge",
+    "No continuous DSH background capture, combined Insight tool bundle, general LLM-driven task quality evaluation, public package release or remote merge",
     "Learning remains optional; no new paid model run or automatic memory publishing",
     "Python/Core require one-time installation; managed mode does not download a runtime; Viewer authentication stays in the browser"
   ],
@@ -204,11 +222,23 @@
     {
       "path": "acceptance-evidence/python-test.txt",
       "sha256": "cce454e20d0ff15761b8a21bfc3163c456b470a40d293189bd031fdfb73249a2"
+    },
+    {
+      "path": "acceptance-evidence/dsh-market-alpha3.json",
+      "sha256": "dbd8970470cc3c3de7ef3b24ee0017da7f5fb7b26704e7918860d153b3e141bf"
+    },
+    {
+      "path": "acceptance-evidence/alpha3-sync-checks.json",
+      "sha256": "ab9cfc7710b0af7187715aad70d77abb3c3a4cb1b4240158fb626ad7deb05d1c"
+    },
+    {
+      "path": "acceptance-evidence/alpha3-sync-test-gate.txt",
+      "sha256": "6bd0f0670941e8634723a9ac7e3632d9a8dd95b6f39acdd7a71cbdedf1411bdf"
     }
   ],
   "versions": {
     "core": "0.1.0a10",
     "learning": "0.1.0a10",
-    "dsh_plugin": "0.1.0-alpha.2"
+    "dsh_plugin": "0.1.0-alpha.3"
   }
 }

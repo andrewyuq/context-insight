@@ -303,7 +303,7 @@ Insight 分析器接入时，应保存生成结果时的 source 摘要和原生 
 
 Lineage DSH 包使用既有包名，运行时依赖已更新并固定到 DSH `0.2.1-rc.2` / Cordis `4.0.5`。实际 tgz 已在独立 Profile 安装，配置合成、启动、工具可见、成功调用与常见失败均已验证，未使用兼容性豁免。Insight DSH 插件尚未在本仓提供，联合 Bundle 需要该侧提供真实包名、版本和工具接口后组合。当前不注册占位 Insight 工具。该验证直接经过 DSH 工具运行时，不包含模型选工具或真实用户任务效果。
 
-插件 0.1.0-alpha.2 配合 Core 0.1.0a10：默认使用 DSH subprocess 服务，在 Profile 启动时运行 loopback Core，系统分配端口，能力检查通过后注册工具。进程随 Profile/插件销毁，数据按 Profile 保留；同一数据目录的并发托管进程使用 OS 文件锁排他。external 模式继续由部署方管理 Core。DSH 的本地托管入口不改变上面的 Insight 外部服务部署方式。
+插件 0.1.0-alpha.3 配合 Core 0.1.0a10：默认使用 DSH subprocess 服务，在 Profile 启动时运行 loopback Core，系统分配端口，能力检查通过后注册工具。进程随 Profile/插件销毁，数据按 Profile 保留；同一数据目录的并发托管进程使用 OS 文件锁排他。external 模式继续由部署方管理 Core。DSH 的本地托管入口不改变上面的 Insight 外部服务部署方式。
 
 会话导入读取 DSH sessionQuery 和官方 v4 codec，覆盖 live/cold、默认 zstd 历史文件、后代会话与分叉继承边界；Core 保存导出 JSONL 的原件和证据坐标。query/open/check 省略 snapshot_id 时使用当前 DSH 会话的持久绑定，首次自动导入。lineage_import 刷新或选择历史任务，lineage_sessions 分页列举，lineage_status 查看截止点，lineage_bind 切换显式快照。安装和手工验证见 [DSH 插件说明](../agentlineage/integrations/dsh/README.md)。
 

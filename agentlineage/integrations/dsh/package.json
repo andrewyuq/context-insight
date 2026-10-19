@@ -1,21 +1,34 @@
 {
   "name": "@fuxi-ailabs/dsh-agentlineage",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "private": true,
   "type": "module",
   "description": "DSH tools for native-session evidence and AgentLineage investigations",
+  "engines": { "node": ">=24", "dsh": "0.2.1-rc.2" },
+  "author": "Fuxi AI Labs",
+  "homepage": "https://fuxi-ailabs.github.io/dsh-plugin-market/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fuxi-ailabs/AgentLineage.git",
+    "directory": "integrations/dsh"
+  },
   "main": "dist/plugin.js",
   "types": "dist/plugin.d.ts",
   "exports": {
     ".": "./dist/plugin.js",
     "./client": "./dist/client.js",
     "./package.json": "./package.json",
-    "./cordis.patch.yml": "./cordis.patch.yml"
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./icon": "./icon.svg",
+    "./locale/en.json": "./locale/en.json",
+    "./locale/zh.json": "./locale/zh.json"
   },
   "files": [
     "dist",
     "cordis.patch.yml",
-    "README.md"
+    "README.md",
+    "icon.svg",
+    "locale"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
