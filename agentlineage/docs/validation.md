@@ -1,5 +1,24 @@
 # 本地交付验证
 
+## 2026-10-19：Core 0.1.0a10 / DSH 0.1.0-alpha.2
+
+本轮在 context-insight 的 codex/agentlineage-integration 分支实现托管 Core 与 DSH 原生会话接入；更新现有 PR #1，未合并。当前验收以 [acceptance.context-insight.json](../acceptance.context-insight.json) 和对应 evidence 文件为准，下文各版本为历史记录。
+
+| 验证 | 本轮结果 |
+|---|---|
+| Windows Python 3.12：ruff / mypy / pytest | 通过；71 个源码文件；93 项测试 |
+| Windows Node 26 / Ubuntu Node 24：DSH build + test | 两端各 8 项通过 |
+| Ubuntu 完整 Insight UT/E2E 与类型/测试库初始化 | 255 个文件通过、1 个跳过；2231 项通过、8 项跳过 |
+| 新 venv 安装 Core/Learning wheel | 通过；使用 site-packages，不依赖仓库源码 |
+| 实际 DSH 0.2.1-rc.2 Profile 安装最终 tgz | 七个工具可见；Core 自动端口、默认 Profile 数据目录、自动导入和查询成功；退出后端口关闭 |
+| 原生 DSH 当前/历史会话 | 真实 filesystem 工具写入/修改后可追溯；压缩 cold session、分叉子会话、刷新和持久绑定通过 |
+| 现有真实 DSH 日志的隔离副本 | 34 条记录导入并查询成功；该材料无文件修改，文件清单为 0；原始内容不纳入验收日志 |
+| 生命周期与异常 | 重启恢复、不同实例独立端口、同目录排他、缺失 Python、启动超时进程清理、外部服务不随插件销毁均通过 |
+
+实际 Profile 验证可使用 scripts/verify_dsh_profile.py 重跑；它只在指定的全新目录安装隔离 Profile，可选择复制一份原生 zstd 会话做读取验证，不修改原会话。验收未调用真实模型，不代表模型自动选择工具或归因结论的质量通过。Python/Core 仍需一次性安装；Viewer 登录由浏览器处理。
+
+## 早期交付环境（历史）
+
 日期：2026-10-08。环境：Windows、Python 3.12.10、Node 26.7.0。
 实现位于 D:/work/AgentLineage，分支 codex/component-foundation，无提交记录。
 远程 fuxi-ailabs/AgentLineage 已创建为 private；未 push、未创建 PR。

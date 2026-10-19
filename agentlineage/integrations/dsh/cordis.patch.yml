@@ -2,5 +2,4 @@
     - id: agentlineage
       name: '@fuxi-ailabs/dsh-agentlineage'
       config:
-        coreUrl: http://127.0.0.1:8110
-        tokenEnv: AGENTLINEAGE_TOKEN
+        mode: managed

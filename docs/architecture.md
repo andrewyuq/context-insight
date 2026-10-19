@@ -261,7 +261,7 @@ erDiagram
 | --- | --- | --- |
 | AgentLineage Core | `agentlineage/components/core`：原件保存、SHA-256、不可变快照、历史截止点查询、文件行归属、原文观测、返修链、机械校验、Viewer、SDK/CLI/MCP/HTTP | 行归属是记录中的写入事实；始终保留 `semantic_verified=false` |
 | AgentLineage 对接 API | `src/lib/lineage`、`src/app/api/lineage`：Core 客户端、明确路由转发、Insight 会话绑定、快照关联 | 不复制证据算法，不读取 Core SQLite，不改 Insight Prisma schema |
-| Lineage DSH 薄插件 | `agentlineage/integrations/dsh`：`lineage_query/open/check`；消费同一 Core | 不承担 DSH 原生采集；不因工具注册就宣称模型完成了真实任务 |
+| Lineage DSH 薄插件 | `agentlineage/integrations/dsh`：托管本地 Core、原生当前/历史/子会话导入、持久快照绑定和七个工具；消费同一 Core | 首次查询自动导入，继续工作后显式刷新；没有持续后台采集，模型分析效果需单独验收 |
 | Learning（可选） | `agentlineage/components/learning`：调查、案例草稿、经验检索、独立发布权限 | 本次保留和回归原有能力；不新增模型执行器、不自动发布经验 |
 | Insight 负责人 | 现有导入/刷新、指标、分析器、Web/TUI/CLI 展示、分析结果携带原生坐标 | 新会话绑定入口可直接调用；分析结果的具体 UI 跳转与分析器改造需由该侧接入 |
 | 联合验收 | 相同材料版本、共享身份、引用映射、组合 Profile | 分别记录 Core、Insight API、DSH 运行时与 Profile 安装证据 |
@@ -302,6 +302,10 @@ Insight 分析器接入时，应保存生成结果时的 source 摘要和原生 
 按迁入的组件化 SOP 第 9 章及 L01-L05、实际触发的 E01/E02/E03/E04/E05 验收。可选 Learning 执行才触发 E06。实际命令、结果和未验证项见 `agentlineage/acceptance.context-insight.json`，它不替代通用验收模板。
 
 Lineage DSH 包使用既有包名，运行时依赖已更新并固定到 DSH `0.2.1-rc.2` / Cordis `4.0.5`。实际 tgz 已在独立 Profile 安装，配置合成、启动、工具可见、成功调用与常见失败均已验证，未使用兼容性豁免。Insight DSH 插件尚未在本仓提供，联合 Bundle 需要该侧提供真实包名、版本和工具接口后组合。当前不注册占位 Insight 工具。该验证直接经过 DSH 工具运行时，不包含模型选工具或真实用户任务效果。
+
+插件 0.1.0-alpha.2 配合 Core 0.1.0a10：默认使用 DSH subprocess 服务，在 Profile 启动时运行 loopback Core，系统分配端口，能力检查通过后注册工具。进程随 Profile/插件销毁，数据按 Profile 保留；同一数据目录的并发托管进程使用 OS 文件锁排他。external 模式继续由部署方管理 Core。DSH 的本地托管入口不改变上面的 Insight 外部服务部署方式。
+
+会话导入读取 DSH sessionQuery 和官方 v4 codec，覆盖 live/cold、默认 zstd 历史文件、后代会话与分叉继承边界；Core 保存导出 JSONL 的原件和证据坐标。query/open/check 省略 snapshot_id 时使用当前 DSH 会话的持久绑定，首次自动导入。lineage_import 刷新或选择历史任务，lineage_sessions 分页列举，lineage_status 查看截止点，lineage_bind 切换显式快照。安装和手工验证见 [DSH 插件说明](../agentlineage/integrations/dsh/README.md)。
 
 自动化集成测试从 JSONL 经 Insight 导入、Core HTTP、证据解析到原文回读；不调用付费模型。`AGENTLINEAGE_TEST_PYTHON` 可指定 Python 3.12 解释器，测试只使用独立 test.db 和临时 Core 状态。CI 增加独立 AgentLineage 工作流；远端是否执行通过须以该工作流结果为准。
 

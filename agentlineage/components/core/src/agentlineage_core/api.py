@@ -85,9 +85,9 @@ class Core:
                 "api_version": "v1", "schema_versions": {"index": INDEX_SCHEMA},
                 "features": ["native-import", "frozen-snapshot", "historical-query",
                              "evidence-check", "viewer", "offline-export", "evidence-anchors-v1",
-                             "observations-v1", "repair-chain-v1", "agent-run-v1", "live-streams-v1", "record-anchors-v1", "optional-overview-v1", "bounded-history-pages-v1"],
+                             "observations-v1", "repair-chain-v1", "agent-run-v1", "live-streams-v1", "record-anchors-v1", "optional-overview-v1", "bounded-history-pages-v1", "dsh-native-v4"],
                 "adapters": [{"name": name, "features": ["offline", "native-evidence"]}
-                             for name in ("claude", "codex", "deveco")]}
+                             for name in ("claude", "codex", "deveco", "dsh")]}
 
     def create_run(self, external_key: str, project_id: str = "default",
                    objective: str = "") -> Json:
@@ -179,6 +179,14 @@ class Core:
                         source_gaps.append({"code": "invalid-json", "line": index + 1})
                         indexed_lines.append("")
                 indexed = ("\n".join(indexed_lines) + "\n").encode() if source_gaps else raw
+            if rows and isinstance(rows[0], dict) and rows[0].get("type") == "session":
+                from .inquiry.source_adapters.dsh import project
+                native_lines = [index + 1 for index, line in enumerate(indexed_lines) if line.strip()]
+                rows = list(project(rows, native_lines))
+                projection = "dsh-native-v4/1"
+                for line_number, row in zip(native_lines, rows):
+                    indexed_lines[line_number - 1] = encoded(row)
+                indexed = ("\n".join(indexed_lines) + "\n").encode()
             if expected_format == "host-activity":
                 source_format = "host-activity"
             else:
@@ -188,6 +196,8 @@ class Core:
                 if len(formats) != 1:
                     raise ValueError("Source must belong to one supported native session format")
                 source_format = next(iter(formats))
+                if source_format == "dsh" and projection != "dsh-native-v4/1":
+                    raise ValueError("DSH material must begin with its native v4 session header")
                 if expected_format not in ("auto", source_format, source_format + "-export"):
                     raise ValueError("Declared source format does not match native records")
         except (UnicodeError, ValueError, TypeError, KeyError, IndexError) as exc:
@@ -310,9 +320,10 @@ class Core:
 
     def file_lineage(self, snapshot_id: str, path: str, at: str) -> Json:
         from .inquiry.native_text import change_payloads
-        from .inquiry.store import timestamp
+        from .inquiry.store import path_key, timestamp
         from .lineage import replay_file
 
+        path = path_key(path)
         events: list[tuple[str, str, Any]] = []
         with self.evidence(snapshot_id) as engine:
             observations = engine.store.rows(

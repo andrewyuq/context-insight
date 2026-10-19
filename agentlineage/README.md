@@ -3,9 +3,9 @@
 本目录是 context-insight 仓库内的 AgentLineage 模块。合并职责、Insight API 和部署配置见[上层架构说明](../docs/architecture.md#agentlineage-integration)。Core/Learning 保留独立安装边界；DSH 插件当前验证版本为 0.2.1-rc.2。迁入来源与初始摘要记录在 `import-manifest.json`，本次验收记录在 `acceptance.context-insight.json`。
 
 AgentLineage 将 Agent 的原生会话变成可查询的证据、返修链和可维护的经验。
-它接收已有 Claude、Codex、DevEco 原生材料，不要求宿主改用新的会话格式。
+它接收已有 Claude、Codex、DevEco、DSH v4 原生材料，不要求宿主改用新的会话格式。
 
-当前 Core/Learning 交付为 **0.1.0a9 alpha**：可独立安装的 Core、Learning，以及消费它们的 DSH 插件。
+当前 Core/Learning 交付为 **0.1.0a10 alpha**：可独立安装的 Core、Learning，以及消费它们的 DSH 插件。
 这是可运行的首版，完整目标与后续范围保存在 [组件方案](docs/design/component-proposal.md)。
 [实际接口](docs/interfaces/implemented-v1.md) 是本版调用依据，带 `-draft` 的 OpenAPI 文件仍是设计草案。
 
@@ -15,7 +15,7 @@ AgentLineage 将 Agent 的原生会话变成可查询的证据、返修链和可
 |---|---|---|
 | agentlineage-core | 原生材料导入、SHA-256 冻结、历史截止点查询、读写/交接证据、报告机械校验、Viewer、行级重放、离线 HTML/JSON | 不执行 Agent，不判断业务验证通过；不透明写入会让行归属断链 |
 | agentlineage-learning | 问题分流、证据制卡、校验反馈重试、调用/时间/token 预算、取消与重启保护、版本化经验、词法检索、离线知识库导出 | 真实模型由显式 executor 接入；自动产物保持 draft，发布使用单独权限 |
-| @fuxi-ailabs/dsh-agentlineage | lineage_query/open/check；可选 cases/memory_search/investigate | 消费 HTTP 能力；未自动捕获 DSH 原生会话，也不安装宿主 hooks |
+| @fuxi-ailabs/dsh-agentlineage | Profile 托管本地 Core、原生当前/历史会话导入、按会话绑定快照、query/open/check；可选 Learning 工具 | 一次性安装 Python/Core；首次查询自动导入，后续显式刷新冻结视图；不持续采集 |
 
 行级接手表示“记录中的哪位 Agent 修改了哪几行”。它不等于缺陷责任或语义因果。
 `semantic_verified: false` 明确保留。没有收到材料的时段不算完整，快照默认 completeness=unknown。
@@ -80,9 +80,10 @@ npm run check
 npm pack --ignore-scripts
 ```
 
-产物包含 `cordis.patch.yml`；按 DSH 的 bundle/插件安装机制安装 tarball，并配置 Core URL 与 token 环境变量。
-可选 Learning URL 单独配置。详见 [插件文档](integrations/dsh/README.md)。
-本版锁定开发测试所用 SDK 0.1.6-alpha.1；正式宿主升级前重跑契约测试。
+产物包含 `cordis.patch.yml`；安装后默认随 Profile 托管本地 Core，自动分配端口与凭据。
+配置 Python 路径后，可直接说“刷新当前会话的 Lineage 快照，分析这个文件的修改来源”，无需手填 snapshot_id。
+历史任务通过 DSH 原生会话服务读取，包含压缩保存的 v4 日志和子会话。外部 Core 与可选 Learning 模式保留。
+安装、自然语言步骤与配置见 [插件文档](integrations/dsh/README.md)。SDK 锁定 0.2.1-rc.2；宿主升级前重跑契约测试。
 
 ## 组件化接入指引
 

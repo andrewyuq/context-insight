@@ -11,13 +11,20 @@ import * as LineagePlugin from "../dist/plugin.js";
 import { Context } from "@deepseek-ai/cordis";
 import ToolRuntime from "@deepseek-ai/dsh-tools";
 import SystemPrompt from "@deepseek-ai/dsh-system-prompt";
+import SessionStore from "@deepseek-ai/dsh-session";
+import SessionQuery from "@deepseek-ai/dsh-session-query-sqlite";
+import LocalSubprocess from "@deepseek-ai/dsh-subprocess-local";
+import LocalFileSystem from "@deepseek-ai/dsh-fs-local";
+import WorkingDirectory from "@deepseek-ai/dsh-working-directory";
+import SessionProjectionRegistry from "@deepseek-ai/dsh-session-projection";
 
 test("DSH tools query a separately running Python Core", { timeout: 30000 }, async () => {
   const directory = await mkdtemp(join(tmpdir(), "agentlineage-dsh-"));
   const python = process.env.AGENTLINEAGE_TEST_PYTHON ??
     resolve("../../.venv", process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
   const child = spawn(python, ["-m", "agentlineage_core.cli", "--data-dir", directory,
-    "serve", "--port", "0"], { env: { ...process.env, AGENTLINEAGE_TOKEN: "fixture-token" },
+    "serve", "--port", "0"], { env: { ...process.env, AGENTLINEAGE_TOKEN: "fixture-token",
+      PYTHONPATH: resolve("../../components/core/src") },
     stdio: ["ignore", "pipe", "pipe"] });
   let stderr = "";
   child.stderr.on("data", data => { stderr += data; });
@@ -60,10 +67,19 @@ test("DSH tools query a separately running Python Core", { timeout: 30000 }, asy
     const ctx = new Context();
     const promptFiber = await ctx.plugin(SystemPrompt, {});
     const toolsFiber = await ctx.plugin(ToolRuntime, {});
+    const sessionsFiber = await ctx.plugin(SessionStore, {});
+    const queryFiber = await ctx.plugin(SessionQuery, { path: join(directory, "query.db") });
+    await queryFiber.await();
+    const localFiber = await ctx.plugin(LocalSubprocess, {});
+    const fsFiber = await ctx.plugin(LocalFileSystem, { cwd: directory });
+    const projectionFiber = await ctx.plugin(SessionProjectionRegistry, {});
+    const cwdFiber = await ctx.plugin(WorkingDirectory, { defaultDirectory: directory });
     process.env.LINEAGE_HOST_TEST_TOKEN = "fixture-token";
     let pluginFiber;
     try {
-      pluginFiber = await ctx.plugin(LineagePlugin, { coreUrl: base, tokenEnv: "LINEAGE_HOST_TEST_TOKEN" });
+      pluginFiber = await ctx.plugin(LineagePlugin, { mode: "external", coreUrl: base,
+        dataDir: join(directory, "bindings"), tokenEnv: "LINEAGE_HOST_TEST_TOKEN" });
+      await pluginFiber.await();
       for (const name of ["lineage_query", "lineage_open", "lineage_check"])
         assert.ok(ctx.tools.get(name));
       const execute = (snapshot_id) => ctx.tools.execute({ callId: "lineage-host-it", name: "lineage_query",
@@ -77,10 +93,19 @@ test("DSH tools query a separately running Python Core", { timeout: 30000 }, asy
       assert.equal(failure.isError, true);
       await pluginFiber.dispose();
       assert.equal(ctx.tools.get("lineage_query"), undefined);
-      pluginFiber = await ctx.plugin(LineagePlugin, { coreUrl: base, tokenEnv: "LINEAGE_HOST_TEST_TOKEN" });
+      assert.equal((await core.request("/v1/capabilities")).component, "agentlineage-core");
+      pluginFiber = await ctx.plugin(LineagePlugin, { coreUrl: base,
+        dataDir: join(directory, "bindings"), tokenEnv: "LINEAGE_HOST_TEST_TOKEN" });
+      await pluginFiber.await();
       assert.ok(ctx.tools.get("lineage_query"));
     } finally {
       await pluginFiber?.dispose();
+      await cwdFiber.dispose();
+      await projectionFiber.dispose();
+      await fsFiber.dispose();
+      await localFiber.dispose();
+      await queryFiber.dispose();
+      await sessionsFiber.dispose();
       await toolsFiber.dispose();
       await promptFiber.dispose();
       delete process.env.LINEAGE_HOST_TEST_TOKEN;

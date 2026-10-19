@@ -1,6 +1,6 @@
 # AgentLineage Learning
 
-Version 0.1.0a9. Python 3.12+. Depends on AgentLineage Core 0.1.0a9.
+Version 0.1.0a10. Python 3.12+. Depends on AgentLineage Core 0.1.0a10.
 CLI: `agentlineage-learning --data-dir PATH --help`.
 Public SDK: `agentlineage_learning.api.Learning`; execution protocol:
 `agentlineage_learning.worker.Executor`.

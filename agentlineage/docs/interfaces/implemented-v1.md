@@ -8,6 +8,8 @@ POST 支持 Idempotency-Key：同路径、同 key、同 body 重放结果；不�
 
 ## Core
 
+Core 0.1.0a10 新增原生 DSH v4 JSONL 格式（capabilities.features 含 dsh-native-v4）。通过现有 sources/snapshots/query API 接入，无新增平行 API。DSH 插件从宿主 sessionQuery 读取当前或历史会话，经官方 codec 导出，自动创建并绑定快照；query/open/check 可省略 snapshot_id。Core 命令行支持 serve --port 0 --exclusive，供 Profile 管理本机进程。安装、七个工具与手动验证见 [DSH 插件](../../integrations/dsh/README.md)。
+
 | 方法/路径 | 输入/输出 |
 |---|---|
 | GET /health、/v1/capabilities | 组件版本、支持的原生格式与能力 |

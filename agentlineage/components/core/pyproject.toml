@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentlineage-core"
-version = "0.1.0a9"
+version = "0.1.0a10"
 readme = "README.md"
 description = "Native agent-session evidence, historical inquiry and repair lineage"
 requires-python = ">=3.12"

@@ -34,6 +34,7 @@ def main(argv: list[str] | None = None) -> int:
     server.add_argument("--host", default="127.0.0.1")
     server.add_argument("--port", type=int, default=8110)
     server.add_argument("--token-env", default="AGENTLINEAGE_TOKEN")
+    server.add_argument("--exclusive", action="store_true")
     export = commands.add_parser("export")
     export.add_argument("--snapshot", required=True)
     export.add_argument("--format", choices=["html", "json"], default="html")
@@ -41,7 +42,12 @@ def main(argv: list[str] | None = None) -> int:
     mcp = commands.add_parser("mcp")
     mcp.add_argument("--snapshot", required=True)
     args = parser.parse_args(argv)
+    lease = None
     try:
+        if args.command == "serve" and args.exclusive:
+            from .runtime import acquire
+            from .paths import data_path
+            lease = acquire(data_path(args.data_dir))
         core = Core(args.data_dir)
         if args.command == "serve":
             from .http import create_server
@@ -83,6 +89,9 @@ def main(argv: list[str] | None = None) -> int:
         error = exc.as_dict() if isinstance(exc, CoreError) else {"code": "INVALID_INPUT", "message": str(exc)}
         print(json.dumps({"error": error}, ensure_ascii=False), file=sys.stderr)
         return 2
+    finally:
+        if lease:
+            lease.close()
 
 
 if __name__ == "__main__":

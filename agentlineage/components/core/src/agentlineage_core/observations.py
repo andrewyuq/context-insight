@@ -40,6 +40,16 @@ def _text_parts(row: dict[str, Any]):
     adapter = adapter_for(row)
     if adapter is None:
         return
+    if adapter.name == "dsh":
+        native = row["record"]
+        if native["type"] not in ("user/message", "assistant/message", "system/message", "developer/message"):
+            return
+        data = native.get("data", {})
+        message = data.get("message", data)
+        for slot, block in enumerate(message.get("content", [])):
+            if isinstance(block, dict) and block.get("type") == "text":
+                yield slot, message.get("role"), block.get("text", "")
+        return
     if adapter.name == "deveco":
         part, message = row.get("part", {}), row.get("message", {})
         if row.get("phase") == "message" and part.get("type") == "text":
@@ -93,7 +103,7 @@ def _records(core: Core, snapshot_id: str):
                                    "/lines/" + str(meta["line"]))
             evidence = {"ref": meta["ref"], "source_id": source["id"],
                         "sha256": source["sha256"], "pointer": pointer,
-                        "coordinate": "json-pointer" if source["projection"] else "jsonl-line"}
+                        "coordinate": "json-pointer" if source["projection"] == "deveco-native-export/1" else "jsonl-line"}
             base = {"session_id": meta["agent"], "provider": meta["platform"],
                     "parent_session_id": meta["parent"], "timestamp": iso(meta["at"]),
                     "evidence": evidence}

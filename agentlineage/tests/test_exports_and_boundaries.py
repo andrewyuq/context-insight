@@ -58,4 +58,4 @@ def test_deployment_files_do_not_bind_original_repository():
     for component in ("core", "learning"):
         config = (ROOT / "components" / component / "pyproject.toml").read_text(encoding="utf-8")
         assert "D:/work" not in config and "D:\\work" not in config
-        assert 'version = "0.1.0a9"' in config
+        assert 'version = "0.1.0a10"' in config

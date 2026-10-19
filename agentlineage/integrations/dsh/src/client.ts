@@ -12,15 +12,27 @@ export class LineageClient {
     this.baseUrl = url.origin;
   }
 
-  async request(path: string, body?: unknown, signal?: AbortSignal): Promise<JsonValue> {
+  async request(path: string, body?: unknown, signal?: AbortSignal, timeoutMs = 30_000): Promise<JsonValue> {
+    return this.send(path, body === undefined ? undefined : JSON.stringify(body),
+      "application/json", signal, timeoutMs);
+  }
+
+  async upload(name: string, bytes: Uint8Array, signal?: AbortSignal): Promise<JsonValue> {
+    if (!bytes.length || bytes.length > 64 * 1024 * 1024) throw new Error("Source exceeds 64 MiB");
+    return this.send("/v1/sources?format=auto&name=" + encodeURIComponent(name),
+      new Uint8Array(bytes), "application/octet-stream", signal, 300000);
+  }
+
+  private async send(path: string, body: string | Uint8Array<ArrayBuffer> | undefined, mime: string,
+                     signal: AbortSignal | undefined, timeoutMs: number): Promise<JsonValue> {
     if (!path.startsWith("/v1/") || path.includes("\\") || new URL(path, this.baseUrl).origin !== this.baseUrl)
       throw new Error("Invalid API path");
-    const timeout = AbortSignal.timeout(30_000);
+    const timeout = AbortSignal.timeout(timeoutMs);
     const response = await fetch(this.baseUrl + path, {
       method: body === undefined ? "GET" : "POST",
       headers: { ...(this.token ? { Authorization: "Bearer " + this.token } : {}),
-        ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        ...(body === undefined ? {} : { "Content-Type": mime }) },
+      ...(body === undefined ? {} : { body }),
       signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
       redirect: "error",
     });
